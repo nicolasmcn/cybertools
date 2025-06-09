@@ -1,11 +1,14 @@
+import ast
 from flask import Flask, request, jsonify, render_template, redirect, url_for, session, flash
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
+from datetime import datetime
 import os
 
 from analyze_domain import analyze
 from functools import wraps
+
 
 def login_required(f):
     @wraps(f)
@@ -28,14 +31,30 @@ app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # en sec
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 
-# === MODELE UTILISATEUR ===
+# === MODELES ===
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
+    analyses = db.relationship('Analysis', backref='user', lazy=True)
+    passwords = db.relationship('PasswordHistory', backref='user', lazy=True)
 
     def check_password(self, password_input):
         return bcrypt.check_password_hash(self.password, password_input)
+
+class Analysis(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    domain = db.Column(db.String(255), nullable=False)
+    result = db.Column(db.Text, nullable=False)
+    date = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+class PasswordHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    password = db.Column(db.String(255), nullable=False)
+    strength = db.Column(db.String(50))
+    date = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 # === INITIALISATION DE LA BASE ===
 with app.app_context():
@@ -49,11 +68,42 @@ with app.app_context():
 
 @app.route('/analyze', methods=['GET'])
 def analyze_domain():
+    if 'user_id' not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+
     domain = request.args.get('domain')
     if not domain:
         return jsonify({"error": "Domain not provided"}), 400
+
     result = analyze(domain)
+
+    new_analysis = Analysis(
+        domain=domain,
+        result=str(result),
+        user_id=session['user_id']
+    )
+    db.session.add(new_analysis)
+    db.session.commit()
+
     return jsonify(result)
+
+@app.route('/save-password', methods=['POST'])
+def save_password():
+    if 'user_id' not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data = request.json
+    password = data.get('password')
+    strength = data.get('strength', 'Non précisé')
+
+    if not password:
+        return jsonify({"error": "Mot de passe manquant."}), 400
+
+    entry = PasswordHistory(password=password, strength=strength, user_id=session['user_id'])
+    db.session.add(entry)
+    db.session.commit()
+
+    return jsonify({"success": True})
 
 @app.route('/')
 def home():
@@ -118,11 +168,25 @@ def register():
 def index():
     return render_template('index.html')
 
+import ast
+
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    return render_template('dashboard.html')
+
+    user_id = session['user_id']
+    analyses = Analysis.query.filter_by(user_id=user_id).order_by(Analysis.date.desc()).all()
+    passwords = PasswordHistory.query.filter_by(user_id=user_id).order_by(PasswordHistory.date.desc()).all()
+
+    for a in analyses:
+        try:
+            a.result_dict = ast.literal_eval(a.result)
+        except Exception as e:
+            print(f"⚠️ Erreur de parsing result: {e}")
+            a.result_dict = {"score": "?", "score_max": "?", "risk_level": "Inconnu"}
+
+    return render_template('dashboard.html', analyses=analyses, passwords=passwords)
 
 @app.route('/logout')
 def logout():
@@ -139,7 +203,6 @@ def analyze_page():
 @app.route('/password')
 def password():
     return render_template('password.html')
-
 
 @app.before_request
 def log_session():
