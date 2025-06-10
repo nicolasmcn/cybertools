@@ -90,7 +90,7 @@
 									</tr>
 								</thead>
 								<tbody>
-									{% for analysis in analyses %}
+									{% for analysis in analyses.items %}
 									<tr>
 										<td>{{ analysis.domain }}</td>
 										<td>{{ analysis.date.strftime("%d/%m/%Y %H:%M") }}</td>
@@ -103,6 +103,25 @@
 						</div>
 						{% else %}
 						<p class="text-muted">Aucune analyse enregistrée pour l’instant.</p>
+						{% endif %}
+					</div>
+					<!-- Pagination pour Analyses -->
+					<div class="d-flex justify-content-between align-items-center mt-2">
+						{% if analysis_limit <= 5 and analyses.total > 5 %}
+						<a href="{{ url_for('dashboard', apage=1, alimit=20, ppage=passwords.page, plimit=password_limit) }}" class="btn btn-outline-primary btn-sm">
+							<i class="bi bi-chevron-double-down"></i> Voir plus
+						</a>
+						{% endif %}
+						{% if analysis_limit > 5 %}
+						<nav>
+							<ul class="pagination pagination-sm mb-0">
+								{% for page_num in range(1, analyses.pages + 1) %}
+								<li class="page-item {% if analyses.page == page_num %}active{% endif %}">
+									<a class="page-link" href="{{ url_for('dashboard', apage=page_num, alimit=analysis_limit, ppage=passwords.page, plimit=password_limit) }}">{{ page_num }}</a>
+								</li>
+								{% endfor %}
+							</ul>
+						</nav>
 						{% endif %}
 					</div>
 		
@@ -120,14 +139,17 @@
 									</tr>
 								</thead>
 								<tbody>
-									{% for pw in passwords %}
+									{% for pw in passwords.items %}
 									<tr>
 										<td><input type="text" class="form-control" value="{{ pw.password }}" id="pw-{{ pw.id }}" readonly></td>
 										<td>{{ pw.strength }}</td>
 										<td>{{ pw.date.strftime("%d/%m/%Y %H:%M") }}</td>
-										<td>
-											<button class="btn btn-outline-secondary btn-sm" onclick="copier('{{ pw.id }}')">
+										<td class="text-center">
+											<button class="btn btn-outline-secondary btn-sm me-1" onclick="copier('{{ pw.id }}')">
 												<i class="bi bi-clipboard"></i>
+											</button>
+											<button class="btn btn-outline-danger btn-sm btn-delete-password" data-id="{{ pw.id }}">
+												<i class="bi bi-trash"></i>
 											</button>
 										</td>
 									</tr>
@@ -140,6 +162,30 @@
 						{% endif %}
 					</div>
 				</div>
+			</div>
+			<!-- Pagination pour Mots de Passe -->
+			<div class="d-flex justify-content-between align-items-center mt-2">
+    			{% if password_limit <= 5 and passwords.total > 5 %}
+    			<a href="{{ url_for('dashboard', apage=analyses.page, alimit=analysis_limit, ppage=1, plimit=20) }}" 
+       			class="btn btn-outline-primary btn-sm">
+        			<i class="bi bi-chevron-double-down"></i> Voir plus
+    			</a>
+    			{% endif %}
+    
+    			{% if password_limit > 5 %}
+    			<nav>
+        			<ul class="pagination pagination-sm mb-0">
+            			{% for page_num in range(1, passwords.pages + 1) %}
+            			<li class="page-item {% if passwords.page == page_num %}active{% endif %}">
+                			<a class="page-link"
+                   			href="{{ url_for('dashboard', apage=analyses.page, alimit=analysis_limit, ppage=page_num, plimit=password_limit) }}">
+                    			{{ page_num }}
+                			</a>
+            			</li>
+            			{% endfor %}
+        			</ul>
+    			</nav>
+    			{% endif %}
 			</div>
 						<!-- Blog Detail Start -->
 						<div class="mb-5">
@@ -402,6 +448,54 @@
 					button.innerHTML = originalIcon;
 				}, 1500);
 			}
+function supprimerPassword(id, button) {
+    if (!confirm("Voulez-vous vraiment supprimer ce mot de passe ?")) return;
+
+    fetch(`/delete-password/${id}`, {
+        method: "DELETE"
+    })
+    .then(response => {
+        if (response.ok) {
+            const row = button.closest("tr");
+            row.remove();
+        } else {
+            alert("Erreur lors de la suppression.");
+        }
+    })
+    .catch(error => {
+        alert("Erreur réseau.");
+        console.error(error);
+    });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+	const deleteButtons = document.querySelectorAll(".btn-delete-password");
+
+	deleteButtons.forEach(button => {
+		button.addEventListener("click", function () {
+			const id = this.getAttribute("data-id");
+
+			if (!confirm("❗ Voulez-vous vraiment supprimer ce mot de passe ?")) return;
+
+			fetch(`/delete-password/${id}`, {
+				method: "DELETE"
+			})
+			.then(response => {
+				if (response.ok) {
+					this.closest("tr").remove();
+				} else {
+					alert("Erreur lors de la suppression.");
+					console.warn("Erreur HTTP:", response.status);
+				}
+			})
+			.catch(error => {
+				alert("Erreur réseau.");
+				console.error("Erreur fetch:", error);
+			});
+		});
+	});
+});
+
 		</script>
 	
 		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

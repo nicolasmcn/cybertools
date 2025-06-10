@@ -176,17 +176,48 @@ def dashboard():
         return redirect(url_for('login'))
 
     user_id = session['user_id']
-    analyses = Analysis.query.filter_by(user_id=user_id).order_by(Analysis.date.desc()).all()
-    passwords = PasswordHistory.query.filter_by(user_id=user_id).order_by(PasswordHistory.date.desc()).all()
+    
+    # Pagination parameters
+    analysis_page = int(request.args.get('apage', 1))
+    password_page = int(request.args.get('ppage', 1))
+    
+    analysis_limit = int(request.args.get('alimit', 5))
+    password_limit = int(request.args.get('plimit', 5))
 
-    for a in analyses:
+    # Paginated queries
+    analysis_query = Analysis.query.filter_by(user_id=user_id).order_by(Analysis.date.desc())
+    password_query = PasswordHistory.query.filter_by(user_id=user_id).order_by(PasswordHistory.date.desc())
+
+    analyses = analysis_query.paginate(page=analysis_page, per_page=analysis_limit, error_out=False)
+    passwords = password_query.paginate(page=password_page, per_page=password_limit, error_out=False)
+
+    for a in analyses.items:
         try:
             a.result_dict = ast.literal_eval(a.result)
-        except Exception as e:
-            print(f"⚠️ Erreur de parsing result: {e}")
+        except:
             a.result_dict = {"score": "?", "score_max": "?", "risk_level": "Inconnu"}
 
-    return render_template('dashboard.html', analyses=analyses, passwords=passwords)
+    return render_template(
+        'dashboard.html',
+        analyses=analyses,
+        passwords=passwords,
+        analysis_limit=analysis_limit,
+        password_limit=password_limit
+    )
+
+@app.route('/delete-password/<int:password_id>', methods=['DELETE'])
+def delete_password(password_id):
+    if 'user_id' not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    pw = PasswordHistory.query.filter_by(id=password_id, user_id=session['user_id']).first()
+    if not pw:
+        return jsonify({"error": "Mot de passe introuvable."}), 404
+
+    db.session.delete(pw)
+    db.session.commit()
+    return jsonify({"success": True}), 200
+    print(f"[DEBUG] Suppression du mot de passe ID={password_id} pour l'utilisateur ID={session['user_id']}")
 
 @app.route('/logout')
 def logout():
