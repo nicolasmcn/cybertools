@@ -26,7 +26,7 @@ CORS(app)
 app.config['SECRET_KEY'] = '5fdd0250fe2820b9724a16995bf576e0ba9814410cb176f41a2994b5359af1fe'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://flaskuser:flask123@localhost/users'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # en sec
+app.config['PERMANENT_SESSION_LIFETIME'] = 3600
 
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
@@ -60,9 +60,9 @@ class PasswordHistory(db.Model):
 with app.app_context():
     try:
         db.create_all()
-        print("✅ Base de données connectée et prête.")
+        print("Base de données connectée et prête.")
     except Exception as e:
-        print(f"❌ Erreur de base de données : {e}")
+        print(f"Erreur de base de données : {e}")
 
 # === ROUTES ===
 
@@ -177,14 +177,12 @@ def dashboard():
 
     user_id = session['user_id']
     
-    # Pagination parameters
     analysis_page = int(request.args.get('apage', 1))
     password_page = int(request.args.get('ppage', 1))
     
     analysis_limit = int(request.args.get('alimit', 5))
     password_limit = int(request.args.get('plimit', 5))
 
-    # Paginated queries
     analysis_query = Analysis.query.filter_by(user_id=user_id).order_by(Analysis.date.desc())
     password_query = PasswordHistory.query.filter_by(user_id=user_id).order_by(PasswordHistory.date.desc())
 
