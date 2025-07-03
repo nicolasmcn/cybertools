@@ -8,27 +8,15 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarCollapse">
             <div class="navbar-nav ms-auto py-0">
-                <a href="/index" class="nav-item nav-link">Home</a>
-                <a href="/about" class="nav-item nav-link">About</a>
+                <a href="/index" class="nav-item nav-link">Menu</a>
                 <a href="{{ url_for('analyze_page') }}" class="nav-item nav-link">Analyser un Site</a>                
-                <div class="nav-item dropdown">
-                    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Blog</a>
-                    <div class="dropdown-menu m-0">
-                        <a href="/blog" class="dropdown-item">Blog Grid</a>
-                        <a href="/detail" class="dropdown-item">Blog Detail</a>
-                    </div>
-                </div>
                 <div class="nav-item dropdown">
                     <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Mot De Passe</a>
                     <div class="dropdown-menu m-0">
                         <a href="{{ url_for('password') }}" class="dropdown-item">Generer un Mot de Passe Robuste</a>
                         <a href="{{ url_for('password') }}" class="dropdown-item">Tester son Mot de Passe</a>
-                        <a href="/team" class="dropdown-item">Team</a>
-                        <a href="/testimonial" class="dropdown-item">Testimonial</a>
-                        <a href="/quote" class="dropdown-item">Free Quote</a>
                     </div>
                 </div>
-                <a href="/contact" class="nav-item nav-link">Contact</a>
             </div>
             <button type="button" class="btn text-primary ms-3" data-bs-toggle="modal" data-bs-target="#searchModal"><i class="fa fa-search"></i></button>
             {% if session.get('user_id') %}
