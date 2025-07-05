@@ -39,11 +39,6 @@ function verifierRobustesse() {
     `;
 }
 
-function toggleGenerateur() {
-    const bloc = document.getElementById("generateurBloc");
-    bloc.style.display = bloc.style.display === "none" ? "block" : "none";
-}
-
 function genererMotDePasse() {
     const length = parseInt(document.getElementById("passwordLength").value);
     const useLower = document.getElementById("includeLower").checked;
@@ -99,4 +94,10 @@ function genererMotDePasse() {
             }
         });
 }
-    
+
+function copierMotDePasse() {
+    const resultField = document.getElementById("resultPassword");
+    resultField.select();
+    document.execCommand("copy");
+    alert("📋 Mot de passe copié dans le presse-papier.");
+} 
