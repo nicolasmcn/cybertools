@@ -3,12 +3,19 @@ from flask import Flask, request, jsonify, render_template, redirect, url_for, s
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
-from datetime import datetime
+from datetime import datetime, timezone
 import os
+import re
 
 from analyze_domain import analyze
 from functools import wraps
 
+def is_strong_password(password):
+    return (
+        len(password) >= 8 and
+        len(re.findall(r'\d', password)) >= 2 and
+        re.search(r'[^A-Za-z0-9]', password)
+    )
 
 def login_required(f):
     @wraps(f)
@@ -46,14 +53,14 @@ class Analysis(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     domain = db.Column(db.String(255), nullable=False)
     result = db.Column(db.Text, nullable=False)
-    date = db.Column(db.DateTime, default=datetime.utcnow)
+    date = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 class PasswordHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     password = db.Column(db.String(255), nullable=False)
     strength = db.Column(db.String(50))
-    date = db.Column(db.DateTime, default=datetime.utcnow)
+    date = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 # === INITIALISATION DE LA BASE ===
@@ -134,6 +141,13 @@ def login():
 
     return render_template('login.html')
 
+def is_strong_password(password):
+    return (
+        len(password) >= 8 and
+        len(re.findall(r'\d', password)) >= 2 and
+        re.search(r'[^A-Za-z0-9]', password)
+    )
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if 'user_id' in session:
@@ -142,6 +156,11 @@ def register():
     if request.method == 'POST':
         email = request.form['email'].strip()
         password = request.form['password'].strip()
+
+        if not is_strong_password(password):
+            flash("Le mot de passe doit contenir au moins 8 caractères, \
+             2 chiffres et un caractère spécial.", "error")
+            return redirect(url_for('register'))
 
         existing_user = User.query.filter_by(email=email).first()
         if existing_user:
@@ -177,12 +196,14 @@ def dashboard():
 
     user_id = session['user_id']
     
+    # Pagination parameters
     analysis_page = int(request.args.get('apage', 1))
     password_page = int(request.args.get('ppage', 1))
     
     analysis_limit = int(request.args.get('alimit', 5))
     password_limit = int(request.args.get('plimit', 5))
 
+    # Paginated queries
     analysis_query = Analysis.query.filter_by(user_id=user_id).order_by(Analysis.date.desc())
     password_query = PasswordHistory.query.filter_by(user_id=user_id).order_by(PasswordHistory.date.desc())
 
@@ -240,6 +261,23 @@ def log_session():
 @app.route('/check-auth')
 def check_auth():
     return jsonify({'authenticated': 'user_id' in session})
+
+@app.route('/delete-account', methods=['POST'])
+def delete_account():
+    if 'user_id' not in session:
+        flash("Vous devez être connecté pour supprimer votre compte.")
+        return redirect(url_for('login'))
+
+    user_id = session['user_id']
+
+    PasswordHistory.query.filter_by(user_id=user_id).delete()
+    Analysis.query.filter_by(user_id=user_id).delete()
+    User.query.filter_by(id=user_id).delete()
+
+    db.session.commit()
+    session.clear()
+    flash("Votre compte et vos données ont été supprimés conformément au RGPD.")
+    return redirect(url_for('home'))
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
