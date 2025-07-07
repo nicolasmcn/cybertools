@@ -1,4 +1,4 @@
-name: Deploy to DigitalOcean
+name: Deploy Flask App
 
 on:
   push:
@@ -10,22 +10,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Setup SSH key
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan 143.110.165.205 >> ~/.ssh/known_hosts
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/github_key
+          chmod 600 ~/.ssh/github_key
+          ssh-keyscan ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
 
-    - name: Deploy to server
-      run: |
-        ssh root@143.110.165.205 "
-          cd /var/www/cybertools &&
-          git pull origin main &&
-          source venv/bin/activate &&
-          pip install -r requirements.txt &&
-          systemctl restart gunicorn
-        "
+      - name: Deploy files via SCP
+        run: |
+          scp -i ~/.ssh/github_key -r * ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}
+
+      - name: Restart Gunicorn
+        run: |
+          ssh -i ~/.ssh/github_key ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
+            cd ${{ secrets.DEPLOY_PATH }}
+            source venv/bin/activate
+            sudo systemctl restart gunicorn
+          EOF
