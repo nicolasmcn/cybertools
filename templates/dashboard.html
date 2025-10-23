@@ -119,7 +119,7 @@
 						</nav>
 						{% endif %}
 					</div>
-		
+					
 					<div class="col-lg-12 mt-5">
 						<h4 class="mb-3">🔐 Historique de vos mots de passe générés</h4>
 						{% if passwords %}
@@ -136,8 +136,17 @@
 								<tbody>
 									{% for pw in passwords.items %}
 									<tr>
-										<td><input type="text" class="form-control" value="{{ pw.password }}" id="pw-{{ pw.id }}" readonly></td>
-										<td>{{ pw.strength }}</td>
+										<td>
+											<div class="input-group">
+											  <input type="password" class="form-control" value="{{ pw.password }}" id="pw-{{ pw.id }}" readonly>
+											  <button type="button"
+													  class="btn btn-outline-secondary btn-sm btn-eye"
+													  data-target="pw-{{ pw.id }}"
+													  title="Afficher/Masquer">
+												<i class="bi bi-eye"></i>
+											  </button>
+											</div>
+										  </td>										<td>{{ pw.strength }}</td>
 										<td>{{ pw.date.strftime("%d/%m/%Y %H:%M") }}</td>
 										<td class="text-center">
 											<button class="btn btn-outline-secondary btn-sm me-1" onclick="copier('{{ pw.id }}')">
@@ -198,6 +207,28 @@
 				</div>
 			</div>
 		</div>
+		<div class="modal fade" id="confirmViewModal" tabindex="-1" aria-hidden="true">
+			<div class="modal-dialog">
+			  <form class="modal-content" id="confirmViewForm">
+				<div class="modal-header">
+				  <h5 class="modal-title">Confirmer votre mot de passe</h5>
+				  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+				</div>
+				<div class="modal-body">
+				  <div class="mb-3">
+					<label for="accountPassword" class="form-label">Mot de passe du compte</label>
+					<input type="password" class="form-control" id="accountPassword" autocomplete="current-password" required>
+					<div class="invalid-feedback">Mot de passe incorrect.</div>
+				  </div>
+				  <small class="text-muted">Pour afficher ou copier ce mot de passe, veuillez confirmer votre mot de passe de compte.</small>
+				</div>
+				<div class="modal-footer">
+				  <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+				  <button type="submit" class="btn btn-primary">Valider</button>
+				</div>
+			  </form>
+			</div>
+		  </div>
 
 
 		<!-- Footer Start -->
@@ -211,7 +242,6 @@
 
 		<!-- JavaScript Libraries -->
 		<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
 		<script src="static/lib/wow/wow.min.js"></script>
 		<script src="static/lib/easing/easing.min.js"></script>
 		<script src="static/lib/waypoints/waypoints.min.js"></script>
@@ -219,10 +249,9 @@
 		<script src="static/lib/owlcarousel/owl.carousel.min.js"></script>
 
 		<!-- Template Javascript -->
-		<script src="static/js/main.js"></script>
-		<script src="statis/js/dashboard.js"></script>
+		<script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+		<script src="{{ url_for('static', filename='js/dashboard.js') }}" defer></script>
 	
-		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-	</body>
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>	</body>
 
 </html>

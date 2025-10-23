@@ -2,13 +2,17 @@ import ast
 from flask import Flask, request, jsonify, render_template, redirect, url_for, session, flash
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
 from flask_bcrypt import Bcrypt
 from datetime import datetime, timezone
-import os
+from config import Config  
+import base64, os
 import re
 
 from analyze_domain import analyze
 from functools import wraps
+from dotenv import load_dotenv
+load_dotenv()
 
 def is_strong_password(password):
     return (
@@ -30,10 +34,7 @@ def login_required(f):
 app = Flask(__name__)
 CORS(app)
 
-app.config['SECRET_KEY'] = '5fdd0250fe2820b9724a16995bf576e0ba9814410cb176f41a2994b5359af1fe'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://flaskuser:flask123@localhost/users'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['PERMANENT_SESSION_LIFETIME'] = 3600
+app.config.from_object(Config)
 
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
@@ -43,6 +44,8 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
+    kdf_salt_b64 = db.Column(db.String(64), nullable=True)
+    kdf_iter = db.Column(db.Integer, default=200_000)
     analyses = db.relationship('Analysis', backref='user', lazy=True)
     passwords = db.relationship('PasswordHistory', backref='user', lazy=True)
 
@@ -59,14 +62,38 @@ class Analysis(db.Model):
 class PasswordHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     password = db.Column(db.String(255), nullable=False)
+    ciphertext_b64 = db.Column(db.Text, nullable=True)
+    iv_b64 = db.Column(db.String(64), nullable=True)
+    alg = db.Column(db.String(64), default="AES-GCM-256/PBKDF2-SHA256")
     strength = db.Column(db.String(50))
     date = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 # === INITIALISATION DE LA BASE ===
+
 with app.app_context():
     try:
         db.create_all()
+        with db.engine.begin() as conn:
+            # --- user ---
+            try:
+                conn.execute(text('ALTER TABLE "user" ADD COLUMN kdf_salt_b64 VARCHAR(64)'))
+            except Exception:
+                pass
+            try:
+                conn.execute(text('ALTER TABLE "user" ADD COLUMN kdf_iter INTEGER DEFAULT 200000'))
+            except Exception:
+                pass
+
+            # --- password_history (ajoute si manquant) ---
+            cols = {row[1] for row in conn.execute(text('PRAGMA table_info(password_history)'))}
+            if "ciphertext_b64" not in cols:
+                conn.execute(text('ALTER TABLE password_history ADD COLUMN ciphertext_b64 TEXT'))
+            if "iv_b64" not in cols:
+                conn.execute(text('ALTER TABLE password_history ADD COLUMN iv_b64 VARCHAR(64)'))
+            if "alg" not in cols:
+                conn.execute(text("ALTER TABLE password_history ADD COLUMN alg VARCHAR(64) DEFAULT 'AES-GCM-256/PBKDF2-SHA256'"))
+
         print("Base de données connectée et prête.")
     except Exception as e:
         print(f"Erreur de base de données : {e}")
@@ -141,13 +168,6 @@ def login():
 
     return render_template('login.html')
 
-def is_strong_password(password):
-    return (
-        len(password) >= 8 and
-        len(re.findall(r'\d', password)) >= 2 and
-        re.search(r'[^A-Za-z0-9]', password)
-    )
-
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if 'user_id' in session:
@@ -169,6 +189,10 @@ def register():
 
         hashed_pw = bcrypt.generate_password_hash(password).decode('utf-8')
         new_user = User(email=email, password=hashed_pw)
+
+        salt = os.urandom(16)
+        new_user.kdf_salt_b64 = base64.b64encode(salt).decode()
+
 
         try:
             db.session.add(new_user)
@@ -235,8 +259,8 @@ def delete_password(password_id):
 
     db.session.delete(pw)
     db.session.commit()
-    return jsonify({"success": True}), 200
     print(f"[DEBUG] Suppression du mot de passe ID={password_id} pour l'utilisateur ID={session['user_id']}")
+    return jsonify({"success": True}), 200
 
 @app.route('/logout')
 def logout():
@@ -279,5 +303,38 @@ def delete_account():
     flash("Votre compte et vos données ont été supprimés conformément au RGPD.")
     return redirect(url_for('home'))
 
+@app.get("/me-kdf")
+def me_kdf():
+    if 'user_id' not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    import base64, os
+    user = User.query.get(session['user_id'])
+
+    if not user.kdf_salt_b64:
+        salt = os.urandom(16)
+        user.kdf_salt_b64 = base64.b64encode(salt).decode()
+        if not user.kdf_iter:
+            user.kdf_iter = 200_000
+        db.session.commit()
+
+    return jsonify({
+        "kdf_salt_b64": user.kdf_salt_b64,
+        "kdf_iter": user.kdf_iter
+    })
+
+@app.post("/re-auth")
+def re_auth():
+    if 'user_id' not in session:
+        return jsonify({"valid": False}), 401
+
+    data = request.get_json(force=True)
+    pwd = (data.get("password") or "").strip()
+
+    user = User.query.get(session['user_id'])
+    if user and bcrypt.check_password_hash(user.password, pwd):
+        return jsonify({"valid": True})
+
+    return jsonify({"valid": False})
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
