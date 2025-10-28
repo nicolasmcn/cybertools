@@ -303,6 +303,10 @@ def delete_account():
     flash("Votre compte et vos données ont été supprimés conformément au RGPD.")
     return redirect(url_for('home'))
 
+@app.get("/healthz")
+def healthz():
+    return "ok", 200
+
 @app.get("/me-kdf")
 def me_kdf():
     if 'user_id' not in session:
