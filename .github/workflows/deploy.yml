@@ -1,33 +1,47 @@
 name: Deploy Flask App
-
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Set up SSH key
+      - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_KEY }}" > ~/.ssh/github_key
           chmod 600 ~/.ssh/github_key
           ssh-keyscan ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Deploy files via SCP
+      - name: Rsync code to server
         run: |
-          scp -i ~/.ssh/github_key -r * ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}
+          rsync -az --delete \
+            --exclude ".git" \
+            --exclude ".github" \
+            --exclude "venv" \
+            --exclude "__pycache__" \
+            --exclude "*.pyc" \
+            --exclude ".env" \
+            ./  ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/
 
-      - name: Restart Gunicorn
+      - name: Install deps & restart service
         run: |
-          ssh -i ~/.ssh/github_key ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
-            cd ${{ secrets.DEPLOY_PATH }}
-            source venv/bin/activate
-            sudo systemctl restart gunicorn
+          ssh -i ~/.ssh/github_key -o StrictHostKeyChecking=no \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'EOF'
+              set -euo pipefail
+              cd "${{ secrets.DEPLOY_PATH }}"
+              [ -d venv ] || sudo -u www-data python3 -m venv venv
+              sudo -u www-data ./venv/bin/pip install --upgrade pip
+              if [ -f requirements.txt ]; then
+                sudo -u www-data ./venv/bin/pip install -r requirements.txt
+              fi
+              sudo -u www-data ./venv/bin/pip install gunicorn
+              systemctl daemon-reload || true
+              systemctl restart myproject
+              systemctl is-active --quiet myproject
+              echo "Deploy OK"
           EOF
