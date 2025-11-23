@@ -1,30 +1,34 @@
 <div class="container-fluid position-relative p-0">
     <nav class="navbar navbar-expand-lg navbar-dark px-5 py-3 py-lg-0">
-        <a href="/" class="navbar-brand p-0">
-            <h1 class="m-0"><i class="fa fa-user-tie me-2"></i>CyberSecurity Tools</h1>
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
-            <span class="fa fa-bars"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarCollapse">
-            <div class="navbar-nav ms-auto py-0">
-                <a href="/index" class="nav-item nav-link">Menu</a>
-                <a href="{{ url_for('analyze_page') }}" class="nav-item nav-link">Analyser un site</a>                
-                <div class="nav-item dropdown">
-                    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Mot de passe</a>
-                    <div class="dropdown-menu m-0">
-                        <a href="{{ url_for('password') }}" class="dropdown-item">Générer un mot de passe robuste</a>
-                        <a href="{{ url_for('password') }}" class="dropdown-item">Tester son mot de passe</a>
-                    </div>
-                </div>
-            </div>
-            {% if session.get('user_id') %}
-                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light ms-3">👤 Mon compte</a>
-                <a href="{{ url_for('logout') }}" class="btn btn-primary py-2 px-4 ms-2">Déconnexion</a>
-            {% else %}
-                <a href="{{ url_for('login', next='dashboard') }}" class="btn btn-outline-light ms-3">🔐 Connexion</a>
-                <a href="{{ url_for('register', next='dashboard') }}"class="btn btn-primary py-2 px-4 ms-2">Inscription</a>
-            {% endif %}        
+    
+    <a href="{{ url_for('main.index') }}" class="navbar-brand">
+        <h1 class="m-0"><i class="fa fa-user-tie me-2"></i>CyberSecurity Tools</h1>
+    </a>
+    
+    <div class="collapse navbar-collapse">
+    <div class="navbar-nav ms-auto py-0">
+    
+    <a href="{{ url_for('main.index') }}" class="nav-item nav-link">Accueil</a>
+    <a href="{{ url_for('analysis.analyze_page') }}" class="nav-item nav-link">Analyser un site</a>
+    
+    <div class="nav-item dropdown">
+        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Mot de passe</a>
+        <div class="dropdown-menu">
+            <a href="{{ url_for('password.password_page') }}" class="dropdown-item">Tester un mot de passe</a>
+            <a href="{{ url_for('password.password_page') }}" class="dropdown-item">Générer un mot de passe</a>
         </div>
+    </div>
+    </div>
+    
+    {% if session.get('user_id') %}
+        <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-outline-light ms-3">👤 Mon compte</a>
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-primary ms-2">Déconnexion</a>
+    {% else %}
+        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light ms-3">🔐 Connexion</a>
+        <a href="{{ url_for('auth.register') }}" class="btn btn-primary ms-2">Inscription</a>
+    {% endif %}
+    
+    </div>
     </nav>
-</div>
+    </div>
+    

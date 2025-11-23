@@ -510,6 +510,26 @@ h6,
     background-color: #c0392b;
 }
 
+.position-relative .form-control.pe-5 { padding-right: 3rem; }
+
+.btn-icon-eye {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  line-height: 1;
+  color: #6c757d;
+  cursor: pointer;
+  box-shadow: none !important;
+  z-index: 2;
+}
+.btn-icon-eye:focus,
+.btn-icon-eye:active,
+.btn-icon-eye:hover {
+  background: transparent !important;
+  border: none !important;
+  color: #495057;
+  box-shadow: none !important;
+}
 @media (min-width: 767.98px) {
     .footer-about {
         margin-bottom: -75px;
@@ -524,4 +544,12 @@ h6,
 .sticky-top.navbar-dark .navbar-nav .nav-link {
     padding: 20px 0;
     color: #fff; /* Texte blanc */
+}
+
+
+.btn-warning {
+    background-color: #ffc107 !important;
+    border-color: #ffc107 !important;
+    color: #000 !important;
+    font-weight: 600;
 }

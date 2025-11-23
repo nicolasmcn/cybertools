@@ -67,7 +67,7 @@
 			<div class="container py-5">
 				<div class="text-center mb-5">
 					<h2 class="fw-bold">Bienvenue sur votre tableau de bord</h2>
-					<a class="btn btn-outline-danger mt-2" href="{{ url_for('logout') }}">Se déconnecter</a>
+					<a class="btn btn-outline-danger mt-2" href="{{ url_for('auth.logout') }}">Se déconnecter</a>
 				</div>
 		
 				<div class="row">
@@ -103,7 +103,7 @@
 					<!-- Pagination pour Analyses -->
 					<div class="d-flex justify-content-between align-items-center mt-2">
 						{% if analysis_limit <= 5 and analyses.total > 5 %}
-						<a href="{{ url_for('dashboard', apage=1, alimit=20, ppage=passwords.page, plimit=password_limit) }}" class="btn btn-outline-primary btn-sm">
+						<a href="{{ url_for('dashboard.dashboard', apage=1, alimit=20, ppage=passwords.page, plimit=password_limit) }}" class="btn btn-outline-primary btn-sm">
 							<i class="bi bi-chevron-double-down"></i> Voir plus
 						</a>
 						{% endif %}
@@ -112,7 +112,7 @@
 							<ul class="pagination pagination-sm mb-0">
 								{% for page_num in range(1, analyses.pages + 1) %}
 								<li class="page-item {% if analyses.page == page_num %}active{% endif %}">
-									<a class="page-link" href="{{ url_for('dashboard', apage=page_num, alimit=analysis_limit, ppage=passwords.page, plimit=password_limit) }}">{{ page_num }}</a>
+									<a class="page-link" href="{{ url_for('dashboard.dashboard', apage=page_num, alimit=analysis_limit, ppage=passwords.page, plimit=password_limit) }}">{{ page_num }}</a>
 								</li>
 								{% endfor %}
 							</ul>
@@ -170,7 +170,7 @@
 			<!-- Pagination pour Mots de Passe -->
 			<div class="d-flex justify-content-between align-items-center mt-2">
     			{% if password_limit <= 5 and passwords.total > 5 %}
-    			<a href="{{ url_for('dashboard', apage=analyses.page, alimit=analysis_limit, ppage=1, plimit=20) }}" 
+    			<a href="{{ url_for('dashboard.dashboard', apage=analyses.page, alimit=analysis_limit, ppage=1, plimit=20) }}" 
        			class="btn btn-outline-primary btn-sm">
         			<i class="bi bi-chevron-double-down"></i> Voir plus
     			</a>
@@ -182,7 +182,7 @@
             			{% for page_num in range(1, passwords.pages + 1) %}
             			<li class="page-item {% if passwords.page == page_num %}active{% endif %}">
                 			<a class="page-link"
-                   			href="{{ url_for('dashboard', apage=analyses.page, alimit=analysis_limit, ppage=page_num, plimit=password_limit) }}">
+                   			href="{{ url_for('dashboard.dashboard', apage=analyses.page, alimit=analysis_limit, ppage=page_num, plimit=password_limit) }}">
                     			{{ page_num }}
                 			</a>
             			</li>
@@ -196,9 +196,10 @@
 							<section id="gdpr-delete-account">
 								<h2>Suppression de compte</h2>
 								<p>Conformément au RGPD, vous pouvez supprimer toutes vos données personnelles enregistrées sur la plateforme.</p>
-								<form method="POST" action="{{ url_for('delete_account') }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.')">
-									<button type="submit" class="delete-button">Supprimer mon compte</button>
-								</form>
+								<form method="POST" action="{{ url_for('dashboard.delete_account') }}"
+									onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.')">
+							  		<button type="submit" class="delete-button">Supprimer mon compte</button>
+						  		</form>
 							</section>
 						</div>
 						<!-- RGPD Suppression End -->

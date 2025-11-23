@@ -1,26 +1,14 @@
 import ast
 from flask import (
-    Blueprint,
-    render_template,
-    redirect,
-    url_for,
-    request,
-    session,
-    jsonify,
-    flash,
+    Blueprint, render_template, redirect,
+    url_for, request, session, jsonify, flash
 )
 from app.utils.security import login_required
 from app.models import Analysis, PasswordHistory, User
 from app import db
+from werkzeug.security import check_password_hash
 
-dashboard_bp = Blueprint("dashboard", __name__)  # <-- IMPORTANT : ce nom
-
-
-@dashboard_bp.route("/")
-def home():
-    if "user_id" in session:
-        return redirect(url_for("dashboard.dashboard"))
-    return redirect(url_for("auth.login"))
+dashboard_bp = Blueprint("dashboard", __name__)
 
 
 @dashboard_bp.route("/dashboard")
@@ -34,19 +22,10 @@ def dashboard():
     analysis_limit = int(request.args.get("alimit", 5))
     password_limit = int(request.args.get("plimit", 5))
 
-    analysis_query = (
-        Analysis.query.filter_by(user_id=user_id)
-        .order_by(Analysis.date.desc())
-    )
-    password_query = (
-        PasswordHistory.query.filter_by(user_id=user_id)
-        .order_by(PasswordHistory.date.desc())
-    )
-
-    analyses = analysis_query.paginate(
+    analyses = Analysis.query.filter_by(user_id=user_id).order_by(Analysis.date.desc()).paginate(
         page=analysis_page, per_page=analysis_limit, error_out=False
     )
-    passwords = password_query.paginate(
+    passwords = PasswordHistory.query.filter_by(user_id=user_id).order_by(PasswordHistory.date.desc()).paginate(
         page=password_page, per_page=password_limit, error_out=False
     )
 
@@ -54,11 +33,7 @@ def dashboard():
         try:
             a.result_dict = ast.literal_eval(a.result)
         except Exception:
-            a.result_dict = {
-                "score": "?",
-                "score_max": "?",
-                "risk_level": "Inconnu",
-            }
+            a.result_dict = {"score": "?", "score_max": "?", "risk_level": "Inconnu"}
 
     return render_template(
         "dashboard.html",
@@ -69,20 +44,33 @@ def dashboard():
     )
 
 
+# ✅ ROUTE DE VALIDATION DU MOT DE PASSE (NOUVELLE)
+@dashboard_bp.route("/re-auth", methods=["POST"])
+@login_required
+def reauth():
+    data = request.get_json()
+    password = data.get("password", "")
+
+    user = User.query.get(session["user_id"])
+    if not user:
+        return jsonify({"valid": False}), 401
+
+    if check_password_hash(user.password, password):
+        return jsonify({"valid": True})
+    else:
+        return jsonify({"valid": False})
+
+
 @dashboard_bp.route("/delete-password/<int:password_id>", methods=["DELETE"])
 @login_required
 def delete_password(password_id):
-    pw = PasswordHistory.query.filter_by(
-        id=password_id, user_id=session["user_id"]
-    ).first()
+    pw = PasswordHistory.query.filter_by(id=password_id, user_id=session["user_id"]).first()
+
     if not pw:
         return jsonify({"error": "Mot de passe introuvable."}), 404
 
     db.session.delete(pw)
     db.session.commit()
-    print(
-        f"[DEBUG] Suppression du mot de passe ID={password_id} pour l'utilisateur ID={session['user_id']}"
-    )
     return jsonify({"success": True}), 200
 
 
@@ -97,7 +85,5 @@ def delete_account():
 
     db.session.commit()
     session.clear()
-    flash(
-        "Votre compte et vos données ont été supprimés conformément au RGPD."
-    )
-    return redirect(url_for("dashboard.home"))
+    flash("Votre compte et vos données ont été supprimés.")
+    return redirect(url_for("main.index"))

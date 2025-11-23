@@ -1,13 +1,16 @@
-fetch("/check-auth")
-  .then(res => res.json())
-  .then(data => {
-    if (!data.authenticated) {
-      window.location.href = "/login";
+document.addEventListener("DOMContentLoaded", () => {
+
+    const form = document.querySelector("form");
+
+    if (form) {
+        form.addEventListener("submit", analyserDomaine);
     }
-  });
+
+});
 
 function analyserDomaine(e) {
-    e.preventDefault();
+    e.preventDefault(); // 🔴 BLOQUE TOTALEMENT LE REFRESH
+
     const domaine = document.getElementById("inputDomaine").value.trim();
     const resultatDiv = document.getElementById("resultatAnalyse");
 
@@ -19,8 +22,17 @@ function analyserDomaine(e) {
     resultatDiv.innerHTML = `<p>⏳ Analyse en cours...</p>`;
 
     fetch(`/analyze?domain=${encodeURIComponent(domaine)}`)
-        .then(res => res.json())
-        .then(data => {
+        .then(res => res.text())
+        .then(text => {
+
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                resultatDiv.innerHTML = `<div class="alert alert-danger">❌ Erreur serveur brute :<pre>${text}</pre></div>`;
+                return;
+            }
+
             if (data.error) {
                 resultatDiv.innerHTML = `<div class="alert alert-danger">❌ Erreur : ${data.error}</div>`;
                 return;
@@ -46,10 +58,10 @@ function analyserDomaine(e) {
             else negatifs.push("Le WHOIS est privé (propriétaire masqué).");
 
             if (data.cloudflare_protected === "Oui") positifs.push("Le site est protégé par Cloudflare.");
-            else if (data.cloudflare_protected === "Non") negatifs.push("Pas de protection Cloudflare détectée.");
+            else negatifs.push("Pas de protection Cloudflare détectée.");
 
             if (data.malware_detected) {
-                negatifs.push(`⚠️ Le site est signalé comme malveillant par : ${data.malware_engines.join(", ")}`);
+                negatifs.push(`⚠️ Site signalé malveillant par : ${data.malware_engines.join(", ")}`);
             } else {
                 positifs.push("✅ Aucun signalement de malware détecté.");
             }
@@ -59,22 +71,22 @@ function analyserDomaine(e) {
                     <h4 class="mb-3">🔍 Analyse du site : <strong>${data.domain}</strong></h4>
 
                     ${data.malware_detected ? `
-                        <div class="alert alert-danger fw-bold">
-                            🚨 Attention : ce site est signalé comme malveillant !
-                            <br><small>Moteurs : ${data.malware_engines.join(", ")}</small>
-                        </div>` : ""}
+                    <div class="alert alert-danger fw-bold">
+                        🚨 SITE DANGEREUX
+                        <br><small>Moteurs : ${data.malware_engines.join(", ")}</small>
+                    </div>` : ""}
 
                     <div class="d-flex align-items-center gap-3 mb-3">
-                        <div class="progress" style="width: 100px; height: 20px;">
-                            <div class="progress-bar bg-${badge}" role="progressbar" style="width: ${confiance}%;">${confiance}%</div>
+                        <div class="progress" style="width: 120px; height: 20px;">
+                            <div class="progress-bar bg-${badge}" style="width: ${confiance}%">${confiance}%</div>
                         </div>
                         <span class="badge bg-${badge}">${niveau}</span>
                     </div>
 
-                    <p><strong>🛰️ Adresse IP :</strong> ${data.ip_address || "Inconnue"}</p>
-                    <p><strong>🔁 Reverse DNS :</strong> ${data.reverse_dns || "Inconnu"}</p>
-                    <p><strong>📆 Expiration :</strong> ${data.domain_expiration || "Non disponible"}</p>
-                    <p><strong>🏢 Registrar :</strong> ${data.registrar || "Inconnu"}</p>
+                    <p><strong>🛰️ IP :</strong> ${data.ip_address}</p>
+                    <p><strong>🔁 Reverse DNS :</strong> ${data.reverse_dns}</p>
+                    <p><strong>📆 Expiration :</strong> ${data.domain_expiration}</p>
+                    <p><strong>🏢 Registrar :</strong> ${data.registrar}</p>
 
                     <div class="row mt-4">
                         <div class="col-md-6">
@@ -83,6 +95,7 @@ function analyserDomaine(e) {
                                 ${positifs.map(p => `<li class="list-group-item">${p}</li>`).join("")}
                             </ul>
                         </div>
+
                         <div class="col-md-6">
                             <h5 class="text-danger">❌ Points négatifs</h5>
                             <ul class="list-group list-group-flush">

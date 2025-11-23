@@ -39,7 +39,7 @@
                       {% endif %}
                     {% endwith %}
 
-                    <form method="POST" action="{{ url_for('login') }}">
+                    <form method="POST" action="{{ url_for('auth.login') }}">
                         <div class="mb-3">
                             <label for="email" class="form-label">Adresse Email</label>
                             <input type="email" class="form-control" id="email" name="email" required autofocus>
@@ -69,7 +69,7 @@
                     </form>
 
                     <div class="text-center mt-3">
-                        <small>Pas encore de compte ? <a href="{{ url_for('register') }}">Créer un compte</a></small>
+                        <small>Pas encore de compte ? <a href="{{ url_for('auth.register') }}">Créer un compte</a></small>
                     </div>
                 </div>
             </div>

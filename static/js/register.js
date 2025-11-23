@@ -1,25 +1,14 @@
-function verifierMotDePasse() {
-    const password = document.getElementById("password").value;
-    const feedback = document.getElementById("feedback");
+document.getElementById("login_password").addEventListener("input", function() {
+    const pw = this.value;
+    const feedback = document.getElementById("passwordFeedback");
 
-    let erreurs = [];
+    let errors = [];
 
-    if (password.length < 8) {
-        erreurs.push("• Au moins 8 caractères");
-    }
+    if (pw.length < 8) errors.push("Au moins 8 caractères");
+    if (!/\d/.test(pw)) errors.push("Au moins 1 chiffre");
+    if (!/[!@#$%^&*]/.test(pw)) errors.push("1 caractère spécial");
 
-    const chiffres = password.match(/\d/g) || [];
-    if (chiffres.length < 2) {
-        erreurs.push("• Au moins 2 chiffres");
-    }
-
-    if (!/[^\w]/.test(password)) {
-        erreurs.push("• Au moins un caractère spécial (@, #, !, etc.)");
-    }
-
-    if (erreurs.length > 0) {
-        feedback.innerHTML = "Mot de passe trop faible :<br>" + erreurs.join("<br>");
-    } else {
-        feedback.innerHTML = "<span class='text-success'>Mot de passe conforme ✅</span>";
-    }
-}
+    feedback.innerHTML = errors.length 
+        ? "Mot de passe faible :<br>" + errors.join("<br>")
+        : "<span class='text-success'>Mot de passe valide ✅</span>";
+});

@@ -80,8 +80,16 @@
                     <div class="d-flex justify-content-center mt-5">
                         <form class="d-flex" onsubmit="analyserDomaine(event)" style="width: 500px;">
                             <input class="form-control me-2" type="text" id="inputDomaine" placeholder="ex: example.com" required>
-                            <button class="btn btn-primary" type="submit">Analyser</button>
+                        
+                            {% if session.get('user_id') %}
+                            <button class="btn btn-primary" type="button" onclick="analyserDomaine(event)">Analyser</button>
+                            {% else %}
+                            <a href="{{ url_for('auth.login') }}" class="btn btn-warning">
+                                🔒 Connectez-vous pour analyser
+                            </a>
+                            {% endif %}                            
                         </form>
+                        
                     </div>
                     </div>
                     </div>

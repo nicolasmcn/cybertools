@@ -59,8 +59,8 @@
                         <div class="p-3" style="max-width: 900px;">
                             <h5 class="text-white text-uppercase mb-3 animated slideInDown">Cybertools</h5>
                             <h1 class="display-1 text-white mb-md-4 animated zoomIn">Bienvenue sur CyberTools</h1>
-                            <a href="{{ url_for('password') }}" class="btn btn-primary py-md-3 px-md-5 me-3 animated slideInLeft">Tester mon mot de passe</a>
-                            <a href="{{ url_for('password') }}" class="btn btn-outline-light py-md-3 px-md-5 animated slideInRight">Générer un mot de passe</a>
+                            <a href="{{ url_for('password.password_page') }}" class="btn btn-primary py-md-3 px-md-5 me-3 animated slideInLeft">Tester mon mot de passe</a>
+                            <a href="{{ url_for('password.password_page') }}" class="btn btn-outline-light py-md-3 px-md-5 animated slideInRight">Générer un mot de passe</a>
                         </div>
                     </div>
                 </div>
@@ -70,8 +70,8 @@
                         <div class="p-3" style="max-width: 900px;">
                             <h5 class="text-white text-uppercase mb-3 animated slideInDown">CyberTools</h5>
                             <h1 class="display-1 text-white mb-md-4 animated zoomIn">Pas encore connecté</h1>
-                            <a href="{{ url_for('login', next='dashboard') }}" class="btn btn-primary py-md-3 px-md-5 me-3 animated slideInLeft">Se connecter</a>
-                            <a href="{{ url_for('register', next='dashboard') }}" class="btn btn-outline-light py-md-3 px-md-5 animated slideInRight">Créer un compte</a>
+                            <a href="{{ url_for('auth.login', next='dashboard.dashboard') }}" class="btn btn-primary py-md-3 px-md-5 me-3 animated slideInLeft">Se connecter</a>
+                            <a href="{{ url_for('auth.register', next='dashboard.dashboard') }}" class="btn btn-outline-light py-md-3 px-md-5 animated slideInRight">Créer un compte</a>
                         </div>
                     </div>
                 </div>
@@ -153,8 +153,10 @@
     <!-- Facts Start -->
 
     <!-- Service Start -->
-    {% if 'user_id' in session %}
-    <div class="container-fluid py-5 wow fadeInUp" data-wow-delay="0.1s">
+
+    {% set uid = session.get('user_id') %}
+    {% if uid %}
+        <div class="container-fluid py-5 wow fadeInUp" data-wow-delay="0.1s">
         <div class="container py-5">
             <div class="section-title text-center position-relative pb-3 mb-5 mx-auto" style="max-width: 600px;">
                 <h5 class="fw-bold text-primary text-uppercase">Nos Services</h5>
@@ -168,9 +170,9 @@
                         </div>
                         <h4 class="mb-3">Accéder à votre compte</h4>
                         <p class="m-0">Vous y trouverez toutes vos recherches de noms de domaine, ainsi que vos mots de passe générés</p>
-                        <a class="btn btn-lg btn-primary rounded" href="{{ url_for('dashboard') }}">
+                        <a class="btn btn-lg btn-primary rounded" href="{{ url_for('dashboard.dashboard') }}">
                             <i class="bi bi-arrow-right"></i>
-                        </a>
+                        </a>                        
                     </div>
                 </div>
                 <div class="col-lg-4 col-md-6 wow zoomIn" data-wow-delay="0.6s">
@@ -180,9 +182,9 @@
                         </div>
                         <h4 class="mb-3">Analyser un nom de domaine</h4>
                         <p class="m-0">En cliquant sur le bouton ci-dessous, vous accèderez directement à la page pour analyser n'importe quel site sur le Web</p>
-                        <a class="btn btn-lg btn-primary rounded" href="{{ url_for('analyze_page') }}">
+                        <a class="btn btn-lg btn-primary rounded" href="{{ url_for('analysis.analyze_page') }}">
                             <i class="bi bi-arrow-right"></i>
-                        </a>
+                        </a>                        
                     </div>
                 </div>
                 <div class="col-lg-4 col-md-6 wow zoomIn" data-wow-delay="0.9s">
@@ -192,9 +194,9 @@
                         </div>
                         <h4 class="mb-3">Tester la robustesse de mon mot de passe</h4>
                         <p class="m-0">Vous pouvez accéder à un testeur de mot de passe pour reduire vos risques de vous faire pirater et ensuite augmenter la robustesse de celui-ci</p>
-                        <a class="btn btn-lg btn-primary rounded" href="{{ url_for('password') }}">
+                        <a class="btn btn-lg btn-primary rounded" href="{{ url_for('password.password_page') }}">
                             <i class="bi bi-arrow-right"></i>
-                        </a>
+                        </a>                        
                     </div>
                 </div>
                 <div class="col-lg-4 col-md-6 wow zoomIn" data-wow-delay="0.3s">
@@ -204,9 +206,9 @@
                         </div>
                         <h4 class="mb-3">Générer un mot de passe sécurisé</h4>
                         <p class="m-0">Grâce à nos filtres spécifiques vous pouvez générer un mot de passe comme bon vous semble qui sera ensuite stocké sur votre compte</p>
-                        <a class="btn btn-lg btn-primary rounded" href="{{ url_for('password') }}">
+                        <a class="btn btn-lg btn-primary rounded" href="{{ url_for('password.password_page') }}">
                             <i class="bi bi-arrow-right"></i>
-                        </a>
+                        </a>                        
                     </div>
                 </div>
                 <div class="col-lg-4 col-md-6 wow zoomIn" data-wow-delay="0.6s">
@@ -246,9 +248,9 @@
                         </div>
                         <h4 class="mb-3">Créer un compte</h4>
                         <p class="m-0">En créant votre compte, vous pourrez accéder à des fonctionnalités spécifiques telles que la génération d'un mot de passe ou encore l'analyse d'un site !</p>
-                        <a class="btn btn-lg btn-primary rounded" href="{{ url_for('register', next='dashboard') }}">
+                        <a class="btn btn-lg btn-primary rounded" href="{{ url_for('auth.register', next='dashboard.dashboard') }}">
                             <i class="bi bi-arrow-right"></i>
-                        </a>
+                        </a>                        
                     </div>
                 </div>
                 <div class="col-lg-4 col-md-6 wow zoomIn" data-wow-delay="0.6s">
@@ -258,9 +260,9 @@
                         </div>
                         <h4 class="mb-3">Se Connecter</h4>
                         <p class="m-0">Si vous avez déjà un compte, n'attendez plus, connectez vous !</p>
-                        <a class="btn btn-lg btn-primary rounded" href="{{ url_for('login', next='dashboard') }}">
+                        <a class="btn btn-lg btn-primary rounded" href="{{ url_for('auth.login', next='dashboard.dashboard') }}">
                             <i class="bi bi-arrow-right"></i>
-                        </a>
+                        </a>                        
                     </div>
                 </div>
                 <div class="col-lg-4 col-md-6 wow zoomIn" data-wow-delay="0.9s">
@@ -270,9 +272,9 @@
                         </div>
                         <h4 class="mb-3">Tester la robustesse de mon mot de passe</h4>
                         <p class="m-0">Vous pouvez accéder à un testeur de mot de passe pour réduire les risques de vous faire pirater</p>
-                        <a class="btn btn-lg btn-primary rounded" href="{{ url_for('password') }}">
+                        <a class="btn btn-lg btn-primary rounded" href="{{ url_for('password.password_page') }}">
                             <i class="bi bi-arrow-right"></i>
-                        </a>
+                        </a>                        
                     </div>
                 </div>
                 <div class="col-lg-4 col-md-6 wow zoomIn" data-wow-delay="0.9s">
