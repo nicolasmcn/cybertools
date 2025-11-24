@@ -5,13 +5,11 @@ from app.utils.security import login_required
 
 password_bp = Blueprint("password", __name__)
 
-# ✅ ACCESSIBLE À TOUS (test libre)
 @password_bp.route("/password-generator")
 def password_page():
     return render_template("password.html")
 
 
-# ✅ PROTÉGÉ : sauvegarde uniquement
 @password_bp.route("/save-password", methods=["POST"])
 @login_required
 def save_password():

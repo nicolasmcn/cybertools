@@ -5,114 +5,76 @@
     <title>Inscription | Startup</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Favicon -->
     <link href="{{ url_for('static', filename='img/favicon.ico') }}" rel="icon">
-
-    <!-- Google Fonts & Icons -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
-    <!-- Bootstrap & Libs -->
     <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='lib/animate/animate.min.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/style.css') }}?v=3" rel="stylesheet"></head>
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
 <body>
 
-    {% include 'partials/navbar.html' %}
+{% include 'partials/navbar.html' %}
 
-    <!-- Register Section -->
-    <div class="container py-5">
-        <div class="row justify-content-center align-items-center" style="min-height: 100vh;">
-            <div class="col-md-6">
-                <div class="card shadow p-4">
-                    <h2 class="text-center text-primary mb-4">Créer un compte</h2>
+<div class="container py-5">
+    <div class="row justify-content-center align-items-center" style="min-height: 100vh;">
+        <div class="col-md-6">
+            <div class="card shadow p-4">
+                <h2 class="text-center text-primary mb-4">Créer un compte</h2>
 
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                      {% if messages %}
-                        {% for category, message in messages %}
-                          <div class="alert alert-{{ 'danger' if category == 'error' else category }}">
-                              {{ message }}
-                          </div>
-                        {% endfor %}
-                      {% endif %}
-                    {% endwith %}
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                    {% for category, message in messages %}
+                      <div class="alert alert-{{ 'danger' if category == 'error' else category }}">
+                          {{ message }}
+                      </div>
+                    {% endfor %}
+                  {% endif %}
+                {% endwith %}
 
-                    <form method="POST" action="{{ url_for('auth.register') }}">
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Adresse Email</label>
-                            <input type="email" class="form-control" id="email" name="email" required autofocus>
-                        </div>
-                    
-                        <div class="mb-3">
-                            <label for="login_password" class="form-label">Mot de passe</label>
-                          
-                            <div class="position-relative">
-                                <input type="password" id="password" name="password" class="form-control" required oninput="checkPasswordStrength()">
-                                <small id="passwordHelp" class="text-danger"></small>
-                                
-                          
-                              <button type="button"
-                                      class="btn-icon-eye position-absolute end-0 top-50 translate-middle-y me-2"
-                                      data-pw-toggle="login_password"
-                                      aria-label="Afficher le mot de passe 1 seconde">
-                                <i class="bi bi-eye fs-5"></i>
-                              </button>
-                            </div>
-                          </div>
-                    
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">S’inscrire</button>
-                        </div>
-                    </form>
-                    
-                    <div class="text-center mt-3">
-                        <small>Déjà un compte ? <a href="{{ url_for('auth.login') }}">Connecte-toi ici</a></small>
+                <form method="POST" action="{{ url_for('auth.register') }}">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Adresse Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required autofocus>
                     </div>
+
+                    <div class="mb-3">
+                        <label for="login_password" class="form-label">Mot de passe</label>
+                    
+                        <div class="position-relative">
+                            <input type="password"
+                                   id="login_password"
+                                   name="password"
+                                   class="form-control pe-5"
+                                   required
+                                   autocomplete="new-password">
+                    
+                            <button type="button"
+                                    class="pw-toggle-btn position-absolute end-0 top-50 translate-middle-y me-3 border-0 bg-transparent">
+                                <i class="bi bi-eye fs-5"></i>
+                            </button>
+                        </div>
+                    
+                        <small id="passwordFeedback" class="form-text text-danger"></small>
+                    </div>
+                    
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">S’inscrire</button>
+                    </div>
+                </form>
+
+                <div class="text-center mt-3">
+                    <small>Déjà un compte ? <a href="{{ url_for('auth.login') }}">Connecte-toi ici</a></small>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-        <!-- Footer Start -->
-        {% include 'partials/footer.html' %}
-    <!-- Footer End -->
+{% include 'partials/footer.html' %}
 
-    <!-- Back to Top -->
-    <a href="#" class="btn btn-lg btn-primary btn-lg-square rounded back-to-top"><i class="bi bi-arrow-up"></i></a>
+<script src="{{ url_for('static', filename='js/register.js') }}"></script>
 
-
-    <!-- JavaScript Libraries -->
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="static/lib/wow/wow.min.js"></script>
-    <script src="static/lib/easing/easing.min.js"></script>
-    <script src="static/lib/waypoints/waypoints.min.js"></script>
-    <script src="static/lib/counterup/counterup.min.js"></script>
-    <script src="static/lib/owlcarousel/owl.carousel.min.js"></script>
-
-    <!-- Template Javascript -->
-    <script src="static/js/main.js"></script>
-    <script src="static/js/register.js"></script>
-    <script src="{{ url_for('static', filename='js/pw_toggle.js') }}?v=3" defer></script>    <link href="{{ url_for('static', filename='css/style.css') }}?v=2" rel="stylesheet">
-    <script>
-        function checkPasswordStrength() {
-            const pwd = document.getElementById("password").value;
-            const help = document.getElementById("passwordHelp");
-        
-            if (pwd.length < 12) {
-                help.textContent = "Mot de passe trop court (minimum 12 caractères)";
-                help.className = "text-danger";
-            } else if (!/[A-Z]/.test(pwd) || !/[0-9]/.test(pwd)) {
-                help.textContent = "Ajoute une majuscule et un chiffre";
-                help.className = "text-warning";
-            } else {
-                help.textContent = "Mot de passe valide ✅";
-                help.className = "text-success";
-            }
-        }
-        </script>
-        
 </body>
 </html>

@@ -2,9 +2,9 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from app import db, bcrypt
 from app.models import User
 from app.utils.security import is_strong_password
-import os, base64
 
 auth_bp = Blueprint('auth', __name__)
+
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -18,8 +18,10 @@ def login():
         password = request.form.get('password')
 
         user = User.query.filter_by(email=email).first()
-        if user and user.check_password(password):
+
+        if user and bcrypt.check_password_hash(user.password, password):
             session['user_id'] = user.id
+            session['email'] = user.email
             flash("Connexion réussie ✅", "success")
             return redirect(next_page or url_for('dashboard.dashboard'))
         else:
@@ -35,12 +37,15 @@ def register():
         password = request.form.get("password")
 
         if User.query.filter_by(email=email).first():
-            flash("Cet email existe déjà.")
+            flash("Cet email existe déjà.", "error")
             return redirect(url_for("auth.register"))
 
         hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
 
-        new_user = User(email=email, password=hashed_password)
+        new_user = User(
+            email=email,
+            password=hashed_password
+        )
 
         db.session.add(new_user)
         db.session.commit()
@@ -48,10 +53,10 @@ def register():
         session["user_id"] = new_user.id
         session["email"] = new_user.email
 
+        flash("Compte créé avec succès ✅", "success")
         return redirect(url_for("dashboard.dashboard"))
 
     return render_template("register.html")
-
 
 
 @auth_bp.route('/logout')

@@ -5,8 +5,7 @@ from flask import (
 )
 from app.utils.security import login_required
 from app.models import Analysis, PasswordHistory, User
-from app import db
-from werkzeug.security import check_password_hash
+from app import db, bcrypt
 
 dashboard_bp = Blueprint("dashboard", __name__)
 
@@ -44,7 +43,6 @@ def dashboard():
     )
 
 
-# ✅ ROUTE DE VALIDATION DU MOT DE PASSE (NOUVELLE)
 @dashboard_bp.route("/re-auth", methods=["POST"])
 @login_required
 def reauth():
@@ -55,10 +53,11 @@ def reauth():
     if not user:
         return jsonify({"valid": False}), 401
 
-    if check_password_hash(user.password, password):
+    if bcrypt.check_password_hash(user.password, password):
         return jsonify({"valid": True})
     else:
-        return jsonify({"valid": False})
+        return jsonify({"valid": False}), 401
+
 
 
 @dashboard_bp.route("/delete-password/<int:password_id>", methods=["DELETE"])
