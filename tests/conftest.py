@@ -1,12 +1,11 @@
-# conftest.py
 import pytest
-from app import app, db
+from app import create_app, db
 
 @pytest.fixture
 def client():
-    app.config['TESTING'] = True
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'  # base temporaire
-    app.config['WTF_CSRF_ENABLED'] = False
+    app = create_app()
+    app.config["TESTING"] = True
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
 
     with app.test_client() as client:
         with app.app_context():

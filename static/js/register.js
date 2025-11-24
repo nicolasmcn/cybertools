@@ -5,7 +5,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const toggleBtn = document.querySelector(".pw-toggle-btn");
     const icon = toggleBtn.querySelector("i");
 
-    // 👁️ AFFICHER / CACHER MOT DE PASSE
     toggleBtn.addEventListener("click", () => {
         if (passwordInput.type === "password") {
             passwordInput.type = "text";

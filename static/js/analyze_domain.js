@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function analyserDomaine(e) {
-    e.preventDefault(); // 🔴 BLOQUE TOTALEMENT LE REFRESH
+    e.preventDefault();
 
     const domaine = document.getElementById("inputDomaine").value.trim();
     const resultatDiv = document.getElementById("resultatAnalyse");

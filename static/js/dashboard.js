@@ -3,9 +3,9 @@
 /* =========================
    ÉTAT GLOBAL
    ========================= */
-let pendingTargetId = null;       // ex: "pw-42"
-let pendingAction = null;         // "reveal" | "copy"
-let revealTimeoutMs = 30000;      // remasquer après 30s
+let pendingTargetId = null;       
+let pendingAction = null;         
+let revealTimeoutMs = 30000;      
 let reauthModalInstance = null;
 
 /* =========================
@@ -36,10 +36,8 @@ function copyInputValue(input, button) {
     }
   };
 
-  // Méthode moderne si dispo
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(input.value).then(doFeedback).catch(() => {
-      // fallback si refus/erreur
       input.removeAttribute("readonly");
       input.select();
       input.setSelectionRange(0, 99999);
@@ -48,7 +46,6 @@ function copyInputValue(input, button) {
       doFeedback();
     });
   } else {
-    // fallback legacy
     input.removeAttribute("readonly");
     input.select();
     input.setSelectionRange(0, 99999);
@@ -77,7 +74,6 @@ function openReauthModal() {
   const field = document.getElementById("accountPassword");
 
   if (!modalEl || !field) {
-    // Fallback si modal absent : prompt()
     const pwd = prompt("Mot de passe du compte :");
     if (pwd !== null) submitReauth(pwd);
     return;
@@ -109,7 +105,6 @@ async function submitReauth(pwd) {
     if (!input) return;
 
     if (pendingAction === "reveal") {
-      // ✅ Révéler tout de suite, remasquer après X s
       input.type = "text";
       updateEyeIcon(pendingTargetId, true);
       maskAfterDelay(pendingTargetId);
@@ -133,7 +128,6 @@ async function submitReauth(pwd) {
 /* =========================
    ACTIONS LIGNE
    ========================= */
-// Compat avec onclick="copier('ID', this)"
 function copier(id, button) {
   const input = getInput("pw-" + id);
   if (!input) return;
@@ -153,11 +147,9 @@ function handleEyeClick(btn) {
   if (!input) return;
 
   if (input.type === "text") {
-    // déjà visible -> remasquer
     input.type = "password";
     updateEyeIcon(targetId, false);
   } else {
-    // masqué -> re-auth, puis révéler
     pendingTargetId = targetId;
     pendingAction = "reveal";
     openReauthModal();
@@ -165,7 +157,7 @@ function handleEyeClick(btn) {
 }
 
 /* =========================
-   SUPPRESSION (inchangé)
+   SUPPRESSION
    ========================= */
 function supprimerPassword(id, button) {
   if (!confirm("Voulez-vous vraiment supprimer ce mot de passe ?")) return;
@@ -189,7 +181,6 @@ function supprimerPassword(id, button) {
    BIND AU CHARGEMENT
    ========================= */
 document.addEventListener("DOMContentLoaded", () => {
-  // Boutons supprimer (déjà dans ton code)
   document.querySelectorAll(".btn-delete-password").forEach(button => {
     button.addEventListener("click", function () {
       const id = this.getAttribute("data-id");
@@ -211,12 +202,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Boutons œil (révéler/masquer avec re-auth)
   document.querySelectorAll(".btn-eye").forEach(btn => {
     btn.addEventListener("click", () => handleEyeClick(btn));
   });
 
-  // Boutons copier (au cas où tu retires l'attribut onclick côté HTML)
   document.querySelectorAll(".btn-copy").forEach(btn => {
     btn.addEventListener("click", () => {
       const targetId = btn.dataset.target || btn.getAttribute("data-target");
@@ -233,7 +222,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Soumission du modal
   document.getElementById("confirmViewForm")?.addEventListener("submit", (e) => {
     e.preventDefault();
     const pwd = document.getElementById("accountPassword")?.value.trim() || "";
