@@ -1,14 +1,10 @@
 import ast
-from flask import (
-    Blueprint, render_template, redirect,
-    url_for, request, session, jsonify, flash
-)
+from flask import Blueprint, render_template, redirect, url_for, request, session, jsonify, flash
 from app.utils.security import login_required
 from app.models import Analysis, PasswordHistory, User
 from app import db, bcrypt
 
 dashboard_bp = Blueprint("dashboard", __name__)
-
 
 @dashboard_bp.route("/dashboard")
 @login_required
@@ -42,7 +38,6 @@ def dashboard():
         password_limit=password_limit,
     )
 
-
 @dashboard_bp.route("/re-auth", methods=["POST"])
 @login_required
 def reauth():
@@ -58,20 +53,16 @@ def reauth():
     else:
         return jsonify({"valid": False}), 401
 
-
-
 @dashboard_bp.route("/delete-password/<int:password_id>", methods=["DELETE"])
 @login_required
 def delete_password(password_id):
     pw = PasswordHistory.query.filter_by(id=password_id, user_id=session["user_id"]).first()
-
     if not pw:
         return jsonify({"error": "Mot de passe introuvable."}), 404
 
     db.session.delete(pw)
     db.session.commit()
     return jsonify({"success": True}), 200
-
 
 @dashboard_bp.route("/delete-account", methods=["POST"])
 @login_required

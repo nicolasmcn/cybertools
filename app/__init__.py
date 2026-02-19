@@ -13,14 +13,22 @@ def create_app():
 
     CORS(app)
 
-    db.init_app(app)
+    # ----------- MODE LOCAL / PROD SWITCH -----------
+    USE_DATABASE = True   # ✔️ mettre False en local
+    # ------------------------------------------------
+
+    if USE_DATABASE:
+        db.init_app(app)
+
     bcrypt.init_app(app)
 
-    from app.models import User, Analysis, PasswordHistory
+    if USE_DATABASE:
+        from app.models import User, Analysis, PasswordHistory
+        with app.app_context():
+            # db.create_all()
+            pass
 
-    with app.app_context():
-        db.create_all()
-
+    # Blueprints
     from app.routes.main import main_bp
     from app.routes.auth import auth_bp
     from app.routes.dashboard import dashboard_bp

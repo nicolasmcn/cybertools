@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>SecureTools - Portfolio</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+    <link href="{{ url_for('static', filename='img/favicon.ico') }}" rel="icon">
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+
+    <!-- CSS -->
+    <link href="{{ url_for('static', filename='lib/animate/animate.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+
+<body>
+
+{% include 'partials/navbar.html' %}
+
+<!-- HERO / PRESENTATION -->
+<section class="container py-5">
+    <div class="row align-items-center g-5">
+        <div class="col-lg-5 text-center">
+            <img src="{{ url_for('static', filename='img/Nicolas.jpg') }}" 
+                 class="img-fluid rounded shadow"
+                 style="max-width: 320px;"
+                 alt="Photo Nicolas Mancino">
+        </div>
+
+        <div class="col-lg-7">
+            <h1 class="fw-bold mb-3">Nicolas Mancino</h1>
+            <h4 class="text-primary mb-4">Développeur / Cybersécurité</h4>
+
+            <p class="mb-4">
+                Diplômé RNCP niveau 6 en Conception et Développement d’Applications, 
+                spécialisé en cybersécurité à Holberton School, j’ai acquis une solide
+                expérience en développement web, sécurité réseau et OSINT.
+            </p>
+
+            <p class="mb-4">
+                Je travaille actuellement sur <strong>SecureTools</strong>, une plateforme 
+                d’outils de cybersécurité et d’analyse en ligne.
+            </p>
+
+            <a href="mailto:n.mancino03@gmail.com" class="btn btn-primary px-4 py-2">
+                <i class="fa fa-envelope me-2"></i>Me contacter
+            </a>
+        </div>
+    </div>
+</section>
+
+<hr class="container">
+
+<!-- COMPETENCES -->
+<section class="container py-5">
+    <h2 class="fw-bold mb-4 text-center">Compétences techniques</h2>
+    <div class="row g-4">
+
+        <div class="col-md-6">
+            <h5 class="text-primary fw-bold mb-3">Langages</h5>
+            <ul class="list-unstyled">
+                <li>- Python</li>
+                <li>- Bash</li>
+                <li>- MySQL</li>
+                <li>- PHP</li>
+                <li>- HTML / CSS / JS</li>
+            </ul>
+        </div>
+
+        <div class="col-md-6">
+            <h5 class="text-primary fw-bold mb-3">Outils & logiciels</h5>
+            <ul class="list-unstyled">
+                <li>- Docker</li>
+                <li>- BurpSuite</li>
+                <li>- Nessus</li>
+                <li>- Wireshark</li>
+                <li>- Dependency Track</li>
+                <li>- ZAP</li>
+            </ul>
+        </div>
+
+    </div>
+</section>
+
+<hr class="container">
+
+<!-- EXPERIENCES -->
+<section class="container py-5">
+    <h2 class="fw-bold mb-4 text-center">Expériences</h2>
+
+    <div class="timeline">
+
+        <div class="mb-4">
+            <h5 class="fw-bold">Développement de SecureTools</h5>
+            <small class="text-muted">Maintenant – Juin 2025</small>
+            <p>Développement complet d’une plateforme SaaS regroupant des outils de cybersécurité, OSINT et analyse.</p>
+        </div>
+
+        <div class="mb-4">
+            <h5 class="fw-bold">Déploiement d’un honeypot</h5>
+            <small class="text-muted">Juin 2025 – Avril 2025</small>
+            <p>Mise en place d’un leurre capturant des attaques en conditions réelles, centralisation des logs sur serveur dédié.</p>
+        </div>
+
+        <div class="mb-4">
+            <h5 class="fw-bold">Développeur Web — “Next to You”</h5>
+            <small class="text-muted">Juin 2024 – Février 2024</small>
+            <p>Développement d’un site référençant les commerces et producteurs locaux de Toulouse.</p>
+        </div>
+
+        <div class="mb-4">
+            <h5 class="fw-bold">Stagiaire — La Bourse de l'immobilier</h5>
+            <small class="text-muted">Février 2018</small>
+            <p>Premières expériences professionnelles, gestion de données et assistance utilisateurs.</p>
+        </div>
+
+    </div>
+</section>
+
+<hr class="container">
+
+<!-- FORMATION -->
+<section class="container py-5">
+    <h2 class="fw-bold mb-4 text-center">Formation</h2>
+
+    <div class="row g-4">
+
+        <div class="col-md-6">
+            <h5 class="fw-bold">Holberton School</h5>
+            <small class="text-muted">2023 – Maintenant</small>
+            <p>RNCP niveau 6, Développement + spécialisation en cybersécurité.</p>
+        </div>
+
+        <div class="col-md-6">
+            <h5 class="fw-bold">Lycée Pierre de Fermat</h5>
+            <small class="text-muted">2019 – 2021</small>
+            <p>Bac général — Spécialités Mathématiques & Physique-Chimie.</p>
+        </div>
+
+    </div>
+</section>
+
+{% include 'partials/footer.html' %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

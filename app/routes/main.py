@@ -6,7 +6,10 @@ main_bp = Blueprint("main", __name__)
 def index():
     return render_template("index.html")
 
-
 @main_bp.route("/check-auth")
 def check_auth():
     return jsonify({"authenticated": "user_id" in session})
+
+@main_bp.route("/about")
+def about():
+    return render_template("about.html")
