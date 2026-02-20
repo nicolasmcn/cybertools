@@ -55,7 +55,7 @@ L'utilisateur peut :
 ## Installation en local
 
 ```bash
-git clone https://github.com/votre-utilisateur/cybertools.git
+git clone https://github.com/nicolasmcn/cybertools.git
 cd cybertools
 python3 -m venv venv
 source venv/bin/activate
